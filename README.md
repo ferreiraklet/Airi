@@ -20,6 +20,8 @@
 
 > mv main airi
 
+> chmod +x airi
+
 > ./airi -h
 ```
 <br>
