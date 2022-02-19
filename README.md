@@ -17,6 +17,10 @@
 > cd airi
 
 > go build main.go
+
+> mv main airi
+
+> ./airi -h
 ```
 <br>
 
