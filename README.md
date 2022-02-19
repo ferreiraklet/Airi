@@ -50,7 +50,7 @@
   cat targets | airi
   
   
-  **Airi only brings to us the url to be tested, so, to test if parameter is reflecting, you can use other tools such as: httpx, kxss, gxss, etc.**
+  **Airi only brings to us the url to be tested, so, to test if parameter is reflecting, you can use other tools such as: httpx, kxss, gxss, etc, or manual analisys.**
 
 
 <br>
