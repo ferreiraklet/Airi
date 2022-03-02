@@ -113,7 +113,7 @@ func getParams(url string, out string) string {
 	match := r.FindAllString(page, -1)
 
 	var params []string
-	
+	var cont2 int
 	for _, param := range match {
 		var cont int
 		if strings.Contains(url,"?"){
@@ -130,9 +130,15 @@ func getParams(url string, out string) string {
 			if cont > 1{
 				fullparam := "&" + name[1] + "=airi"
 				params = append(params, fullparam)
-		}else{
-			fullparam := "?" + name[1] + "=airi"
-			params = append(params, fullparam)
+			}else{
+				if cont2 >= 2{
+                                        fullparam := "&" + name[1] + "=airi"
+                                        params = append(params, fullparam)
+                                }else{
+                                        fullparam := "?" + name[1] + "=airi"
+                                        //fmt.Println(cont2)
+                                        params = append(params, fullparam)
+                                }
 
 		}}
 
