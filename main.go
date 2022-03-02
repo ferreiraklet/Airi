@@ -116,6 +116,7 @@ func getParams(url string, out string) string {
 	var cont2 int
 	for _, param := range match {
 		var cont int
+		cont2 += 1
 		if strings.Contains(url,"?"){
 			cont = 2 
 		}else{
