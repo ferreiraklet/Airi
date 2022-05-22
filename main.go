@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
+	"net/url"
 	"net/http"
 	"os"
 	"regexp"
@@ -20,10 +21,10 @@ func init() {
 		help := []string{
 			"Airi Hidden Params Finder",
 			"",
-			"Usage:",
+			"[buffers] | airi",
 			"+=======================================================+",
-			"       -o,     --output     Save output to a file",
-			"       -h                   Show This Help Message",
+			"",
+			" -h                   Show This Help Message",
 			"",
 			"+=======================================================+",
 			"",
@@ -36,46 +37,56 @@ func init() {
 
 func main() {
 
-	var output string
-	flag.StringVar(&output, "o", "", "")
-	flag.StringVar(&output, "output", "", "")
 	// var target string
 	// flag.StringVar(&target, "u", "","")
 	// flag.StringVar(&target, "url", "", "")
 	flag.Parse()
 
-	var urls []string
+	
+	targets := make(chan string)
+
 	std := bufio.NewScanner(os.Stdin)
-	for std.Scan() {
-		var line string = std.Text()
-		hline := strings.Replace(line, "%2F", "/", -1)
-		line = hline
-		// fmt.Println(line)
-
-		urls = append(urls, line)
-
-	}
+	
 	var wg sync.WaitGroup
-	for _, u := range urls {
-		wg.Add(1)
-		go func(url string) {
+	for i:=0;i<50;i++ {
+		
+			wg.Add(1)
+			go func() {
 
-			defer wg.Done()
+				defer wg.Done()
+				for v := range targets{
 
-			x := getParams(url, output)
-			if x != "ERROR" {
-				fmt.Println(x)
-			}
-			//fmt.Println(pms, url)
+					_, err := url.Parse(v)
+					if err != nil{
+						continue
+					}
 
-		}(u)
-	}
+					x := getParams(v)
+					if x != "ERROR" {
+						fmt.Println(x)
+					}
 
-	wg.Wait()
+
+
+				}
+
+				
+				//fmt.Println(pms, url)
+
+			}()
+		
+		}
+	for std.Scan() {
+        var line string = std.Text()
+        targets <- line
+
+    	}
+    close(targets)
+    wg.Wait()
 
 }
 
-func getParams(url string, out string) string {
+func getParams(url string) string {
 
 	var trans = &http.Transport{
 		MaxIdleConns:      30,
@@ -109,7 +120,14 @@ func getParams(url string, out string) string {
 	}
 
 	page := string(body)
-	r, _ := regexp.Compile(`[/^name=$/]{5}.*\s?\s?\s?\s?\s?\s?value=""`)
+	r, err := regexp.Compile(`\s?\s?\s?\s?\s?\s?(name=".*value="")`)
+	//[/^name=$/]{5}.*\s?\s?\s?\s?\s?\s?value=""
+	//\s?\s?\s?\s?\s?\s?(name=".*value="")
+	//\s?\s?\s?\s?\s?\s?(name=".*value="")
+	//<input\s?\s?\s?type=.*(\s?\s?\s?\s?\s?\s?(name=".*)value="")
+	if err != nil{
+		return "ERROR"
+	}
 	match := r.FindAllString(page, -1)
 
 	var params []string
@@ -122,23 +140,27 @@ func getParams(url string, out string) string {
 		}else{
 			cont = 1
 		}
-		s, _ := regexp.Compile(`name=".*?"`)
-		match2 := s.FindString(param)
-		name := strings.Split(match2, `"`)
-		//matchSplitted := strings.Split(param, " ")
-		//name := strings.Split(matchSplitted[2], `"`)
-		if !strings.Contains(name[1], "__") {
+		newstr := strings.Replace(param, " ", ",", -1)
+		va := strings.Split(newstr, ",")[1]
+		if len(va) < 8{
+			return "ERROR"
+		}
+		paran := string(va[6:len(va)-1])
+
+		
+
+		if !strings.Contains(paran, "__") {
 			if cont > 1{
-				fullparam := "&" + name[1] + "=airi"
+				fullparam := "&" + paran + "=airi"
 				params = append(params, fullparam)
 			}else{
 				if cont2 >= 2{
-                                        fullparam := "&" + name[1] + "=airi"
-                                        params = append(params, fullparam)
-                                }else{
-                                        fullparam := "?" + name[1] + "=airi"
-                                        //fmt.Println(cont2)
-                                        params = append(params, fullparam)
+                        fullparam := "&" + paran + "=airi"
+                        params = append(params, fullparam)
+                }else{
+                        fullparam := "?" + paran + "=airi"
+                        //fmt.Println(cont2)
+                        params = append(params, fullparam)
                                 }
 
 		}}
@@ -147,37 +169,8 @@ func getParams(url string, out string) string {
 	urlFinal := url + strings.Join(params, "")
 	if urlFinal != url {
 		//fmt.Println(urlFinal)
-		if out != "" {
-
-			/*path, err := os.Getwd()
-			  if err != nil {
-			  fmt.Println(err)
-			          } */
-			data := urlFinal + "\n"
-			file, err := os.Create(out)
-			if err != nil {
-				fmt.Println(err)
-			}
-			defer file.Close()
-
-			_, errg := file.WriteString(data)
-			if errg != nil {
-				fmt.Println(errg)
-			}
-
-		}
 		return urlFinal
 	}
 	return "ERROR"
-	// if out != false{
-	// save file
-	//}
-
-	//matchSplitted := strings.Split(match, " ")
-	//name := strings.Split(matchSplitted[2], `"`)
-
-	//value[1]
-	// return "NOT VULNERABLE!"
-
+	
 }
-
