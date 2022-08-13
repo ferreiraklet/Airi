@@ -120,7 +120,7 @@ func getParams(url string) string {
 	}
 
 	page := string(body)
-	r, err := regexp.Compile(`\s?\s?\s?\s?\s?\s?(name=".*value="")`)
+	r, err := regexp.Compile(`\<input.*\s?\s?\s?\s?\s?\s?\s?\s?\s?(name=.*\s?\s?\s?\s?\s?value=.*)`)
 	//[/^name=$/]{5}.*\s?\s?\s?\s?\s?\s?value=""
 	//\s?\s?\s?\s?\s?\s?(name=".*value="")
 	//\s?\s?\s?\s?\s?\s?(name=".*value="")
@@ -140,14 +140,14 @@ func getParams(url string) string {
 		}else{
 			cont = 1
 		}
-		newstr := strings.Replace(param, " ", ",", -1)
-		va := strings.Split(newstr, ",")[1]
-		if len(va) < 8{
-			return "ERROR"
-		}
-		paran := string(va[6:len(va)-1])
 
-		
+		pattern := regexp.MustCompile(`\s+`)
+		newstr := pattern.ReplaceAllString(param, " ")
+		param_regex := regexp.MustCompile(`name="?'?[^\"\']+`)
+		match2 := param_regex.FindString(newstr)
+		paran := match2[6:]
+
+		//fmt.Println(paran)
 
 		if !strings.Contains(paran, "__") {
 			if cont > 1{
