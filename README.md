@@ -12,17 +12,12 @@
 
 ## - Installation & Requirements:
 ```
-> git clone https://github.com/ferreiraklet/airi.git
-
-> cd airi
-
-> go build main.go
-
-> mv main airi
-
-> chmod +x airi
-
-> ./airi -h
+git clone https://github.com/ferreiraklet/airi.git
+cd airi
+go build main.go
+mv main airi
+chmod +x airi
+./airi -h
 ```
 <br>
 
